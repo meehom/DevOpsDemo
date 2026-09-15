@@ -1,0 +1,55 @@
+scripts/check_designs.py
+  s_4269dfcfab89eb::t_356ff900e8616f 1-128
+specs/REQ-001-两数相加接口与演示页面.md
+  s_4269dfcfab89eb::t_ab3d6f84f16663 5
+designs/DS-001-演示应用高保真/prompt.md
+  s_4269dfcfab89eb::t_8d1813c4329da6 1-77
+designs/DS-001-演示应用高保真/mockup.html
+  s_4269dfcfab89eb::t_78496d4e2459a8 1-530
+designs/DS-001-演示应用高保真/design.md
+  s_4269dfcfab89eb::t_ab0f0dadc0c82b 1-61
+AGENTS.md
+  s_4269dfcfab89eb::t_30ef9c0f8979b2 85-91
+  s_4269dfcfab89eb::t_c7e385c4ed46a2 74
+  s_4269dfcfab89eb::t_d224bd3b8f39a8 3,8-17
+  s_4269dfcfab89eb::t_8b0b42b0324776 48-51
+  s_4269dfcfab89eb::t_597ab2d016078d 18
+specs/TEMPLATE.md
+  s_4269dfcfab89eb::t_fc0942aa4b9e70 5
+scripts/check_specs.py
+  s_4269dfcfab89eb::t_1d7e9693c120e8 123
+  s_4269dfcfab89eb::t_62002a79ef30f8 49,69-70,78-101
+  s_4269dfcfab89eb::t_db82c4dc50c955 16,19
+  s_4269dfcfab89eb::t_96c50f6271b7b6 102-103
+.github/workflows/ci-cd.yml
+  s_4269dfcfab89eb::t_6173d4719be1fa 15-32,36,47
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.2",
+  "base_commit_sha": "2261c2c1693c686546c5d05a389921cb2745493d",
+  "prompts": {},
+  "sessions": {
+    "s_4269dfcfab89eb": {
+      "agent_id": {
+        "tool": "trae",
+        "id": "6aa959ca171f658a132d3e8b",
+        "model": "DeepSeek-V4.1-Flash__dev"
+      },
+      "human_author": "meehomliao <meehomliao@163.com>",
+      "custom_attributes": {
+        "tool_id": "Write",
+        "edit_kind": "file_edit",
+        "tool_use_id": "6aa96e77171f658a132d4140",
+        "client_type": "ide",
+        "tool_type": "agent",
+        "dedupe_key": "6aa959ca171f658a132d3e8b:6aa96e77171f658a132d4140:afterEdit:103c8781",
+        "external_session_id": "6aa959ca171f658a132d3e8b",
+        "source_scene": "unknown",
+        "session_id": "6aa959ca171f658a132d3e8b",
+        "operation_id": "6aa96e77171f658a132d4140",
+        "runtime_client": "trae-tob-git-ai"
+      }
+    }
+  }
+}
