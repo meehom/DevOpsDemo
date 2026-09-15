@@ -45,8 +45,12 @@ python scripts/check_specs.py
 .venv/bin/pytest -m e2e                      # 终端 2
 .venv/bin/pytest -m e2e --headed --slowmo=300  # 有头模式，肉眼看执行过程
 
-# 验收报告：跑测试并生成 reports/REQ-001/acceptance.md
+# 验收报告：跑测试并生成 reports/REQ-001/acceptance.html（截图内嵌，单文件可分享）
 python scripts/acceptance_report.py REQ-001
+python scripts/acceptance_report.py --all    # 全部需求
+
+# 需求总览报告：横向看所有需求的状态、覆盖、缺口
+python scripts/overview_report.py
 ```
 
 ## 目录约定

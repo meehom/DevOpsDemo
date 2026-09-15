@@ -167,14 +167,18 @@ jobs:
           name: e2e-results
           path: reports
 
-      - name: 生成验收报告
-        run: python scripts/acceptance_report.py REQ-001 --skip-run
+      - name: 生成各需求验收报告
+        # 单个需求失败不影响其余需求出报告；门禁由 spec-check / test / e2e 负责
+        run: python scripts/acceptance_report.py --all --skip-run || true
+
+      - name: 生成需求总览报告
+        run: python scripts/overview_report.py || true
 
       - name: 上传验收报告
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: acceptance-REQ-001
+          name: acceptance-reports
           path: reports
           if-no-files-found: ignore
 
