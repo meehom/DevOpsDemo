@@ -2,6 +2,7 @@
 id: REQ-XXX
 title: 一句话说明这个需求要做什么
 status: draft
+design: DS-XXX
 owner: 你的名字
 created: YYYY-MM-DD
 ---

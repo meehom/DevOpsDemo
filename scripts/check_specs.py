@@ -13,8 +13,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SPECS_DIR = ROOT / "specs"
 TESTS_DIR = ROOT / "tests"
+DESIGNS_DIR = ROOT / "designs"
 
 REQ_ID_PATTERN = re.compile(r"^REQ-\d{3}$")
+DS_ID_PATTERN = re.compile(r"^DS-\d{3}$")
 TEMPLATE_NAME = "TEMPLATE.md"
 
 
@@ -44,7 +46,7 @@ def acceptance_criteria(body: str):
     ]
 
 
-def collect_specs():
+def collect_specs(known_designs):
     """返回 [(需求文档路径, 元信息, 验收标准列表, 错误列表)]。"""
     results = []
     for path in sorted(SPECS_DIR.glob("*.md")):
@@ -64,11 +66,39 @@ def collect_specs():
             if not meta.get(field):
                 errors.append(f"front-matter 缺少 {field}")
 
+        errors.extend(check_design_reference(meta.get("design", ""), known_designs))
+
         if not criteria:
             errors.append("「验收标准」小节为空或格式不对（需要 - 开头的列表条目）")
 
         results.append((path, meta, criteria, errors))
     return results
+
+
+def design_dirs():
+    """返回 {设计 ID: 设计目录}。"""
+    mapping = {}
+    if not DESIGNS_DIR.is_dir():
+        return mapping
+    for path in sorted(DESIGNS_DIR.iterdir()):
+        design_md = path / "design.md"
+        if not path.is_dir() or not design_md.exists():
+            continue
+        meta, _ = read_front_matter(design_md)
+        if meta.get("id"):
+            mapping[meta["id"]] = path
+    return mapping
+
+
+def check_design_reference(design_id, known_designs):
+    """需求必须挂到一份存在的高保真设计上，否则先补设计再拆需求。"""
+    if not design_id:
+        return ["front-matter 缺少 design，需求必须挂到一份高保真设计（见 AGENTS.md 铁律 0）"]
+    if not DS_ID_PATTERN.match(design_id):
+        return [f"design 字段格式应为 DS-三位数字，当前是 {design_id!r}"]
+    if design_id not in known_designs:
+        return [f"design 指向的 {design_id} 在 designs/ 下不存在"]
+    return []
 
 
 def check_test_files(req_id: str):
@@ -90,7 +120,7 @@ def main() -> int:
         print(f"错误：找不到需求目录 {SPECS_DIR}")
         return 1
 
-    specs = collect_specs()
+    specs = collect_specs(design_dirs())
     if not specs:
         print(f"错误：{SPECS_DIR} 下没有任何需求文档（模板 {TEMPLATE_NAME} 不算）")
         return 1

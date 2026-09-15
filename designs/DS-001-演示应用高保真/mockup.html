@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>演示原型 · 商品与计算器</title>
+<style>
+  :root {
+    /* Material 3 颜色角色，值见 designs/DS-001-演示应用高保真/prompt.md */
+    --primary: #00696E;
+    --on-primary: #FFFFFF;
+    --primary-container: #9CF1F6;
+    --on-primary-container: #002022;
+    --secondary-container: #CCE8E9;
+    --surface: #F4FBFB;
+    --surface-container: #E8EFF0;
+    --on-surface: #161D1D;
+    --on-surface-variant: #3F4949;
+    --outline: #6F7979;
+    --surface-tint: #00696E;
+    --error: #BA1A1A;
+    --card-radius: 16px;
+    --dialog-radius: 28px;
+    --standard-ease: cubic-bezier(0.2, 0, 0, 1);
+    --expressive-ease: cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--surface);
+    color: var(--on-surface);
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* 常驻提示：避免客户误认为已上线 */
+  .banner {
+    background: var(--secondary-container);
+    color: var(--on-primary-container);
+    font-size: 12px;
+    padding: 6px 16px;
+    text-align: center;
+    letter-spacing: .02em;
+  }
+
+  .app { display: flex; min-height: calc(100vh - 30px); }
+
+  /* ---------- 桌面：侧边导航栏 ---------- */
+  .rail {
+    width: 92px;
+    flex: 0 0 92px;
+    background: var(--surface-container);
+    padding: 16px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .rail-item {
+    border: 0;
+    background: transparent;
+    color: var(--on-surface-variant);
+    border-radius: 16px;
+    padding: 10px 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background .2s var(--standard-ease), color .2s var(--standard-ease);
+  }
+  .rail-item:hover { background: rgba(0, 105, 110, .08); }
+  .rail-item.is-active { background: var(--primary-container); color: var(--on-primary-container); font-weight: 600; }
+
+  /* ---------- 移动：底部导航栏 ---------- */
+  .bottomnav {
+    display: none;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: var(--surface-container);
+    padding: 8px 0 12px;
+    justify-content: space-around;
+    z-index: 20;
+  }
+  .bottomnav button {
+    border: 0;
+    background: transparent;
+    color: var(--on-surface-variant);
+    font: inherit;
+    font-size: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 18px;
+    border-radius: 16px;
+    cursor: pointer;
+  }
+  .bottomnav button.is-active { color: var(--on-primary-container); background: var(--primary-container); font-weight: 600; }
+
+  /* ---------- 内容区 ---------- */
+  main { flex: 1; min-width: 0; padding-bottom: 24px; }
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 20px;
+    background: var(--surface);
+  }
+  .topbar h1 { font-size: 16px; font-weight: 600; margin: 0; flex: 1; }
+  .icon-btn {
+    border: 0;
+    background: transparent;
+    color: var(--on-surface-variant);
+    width: 40px; height: 40px;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+  }
+  .icon-btn:hover { background: rgba(0, 105, 110, .08); }
+
+  .view { padding: 4px 20px 20px; animation: fade .2s var(--standard-ease); }
+  @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  .section-title { font-size: 14px; font-weight: 600; margin: 22px 0 10px; color: var(--on-surface-variant); }
+
+  /* 统计卡片 */
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .card {
+    background: var(--surface-container);
+    border-radius: var(--card-radius);
+    padding: 18px;
+  }
+  .card .label { font-size: 12px; color: var(--on-surface-variant); }
+  .card .value { font-size: 28px; font-weight: 700; margin: 4px 0 2px; }
+  .card .hint { font-size: 12px; color: var(--on-surface-variant); }
+
+  /* 列表项 */
+  .list { background: var(--surface-container); border-radius: var(--card-radius); overflow: hidden; }
+  .list-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 18px;
+    border-bottom: 1px solid rgba(111, 121, 121, .18);
+    cursor: pointer;
+    background: transparent;
+    border-left: 0; border-right: 0; border-top: 0;
+    width: 100%;
+    font: inherit;
+    color: inherit;
+    text-align: left;
+  }
+  .list-item:last-child { border-bottom: 0; }
+  .list-item:hover { background: rgba(0, 105, 110, .06); }
+  .avatar {
+    width: 40px; height: 40px;
+    border-radius: 12px;
+    background: var(--primary-container);
+    color: var(--on-primary-container);
+    display: grid; place-items: center;
+    font-weight: 600;
+    font-size: 13px;
+    flex: 0 0 40px;
+  }
+  .list-item .meta { flex: 1; min-width: 0; }
+  .list-item .meta b { display: block; font-weight: 600; }
+  .list-item .meta span { font-size: 12px; color: var(--on-surface-variant); }
+
+  /* 商品网格 */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+  .item-card { background: var(--surface-container); border-radius: var(--card-radius); padding: 18px; cursor: pointer; }
+  .item-card:hover { box-shadow: 0 1px 3px rgba(0, 0, 0, .16); }
+  .chip {
+    display: inline-block;
+    background: var(--secondary-container);
+    color: var(--on-primary-container);
+    font-size: 12px;
+    padding: 3px 10px;
+    border-radius: 999px;
+  }
+  .item-card h3 { margin: 12px 0 6px; font-size: 15px; }
+  .item-card .price { font-size: 24px; font-weight: 700; color: var(--primary); }
+  .item-card .price::before { content: "¥"; font-size: 14px; margin-right: 2px; }
+  .item-card .stock { font-size: 12px; color: var(--on-surface-variant); margin-top: 4px; }
+  .item-card.is-out .price { color: var(--error); }
+
+  /* 表单与按钮 */
+  .field { display: block; margin-bottom: 16px; }
+  .field span { display: block; font-size: 12px; color: var(--on-surface-variant); margin-bottom: 6px; }
+  .field input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--outline);
+    border-radius: 12px;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+  }
+  .field input:focus { outline: 2px solid var(--primary); outline-offset: -2px; border-color: var(--primary); }
+
+  .btn {
+    border: 0;
+    border-radius: 999px;
+    padding: 12px 24px;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    transition: filter .15s var(--standard-ease);
+  }
+  .btn:hover { filter: brightness(.95); }
+  .btn-filled { background: var(--primary); color: var(--on-primary); }
+  .btn-filled.block { width: 100%; }
+  .btn-text { background: transparent; color: var(--primary); }
+
+  .result {
+    margin-top: 18px;
+    background: var(--surface-container);
+    border-radius: var(--card-radius);
+    padding: 22px;
+    text-align: center;
+  }
+  .result .label { font-size: 12px; color: var(--on-surface-variant); }
+  .result .value { font-size: 40px; font-weight: 700; margin-top: 6px; }
+  .result .value.empty { color: var(--on-surface-variant); }
+
+  /* 悬浮按钮 */
+  .fab {
+    position: fixed;
+    right: 24px; bottom: 24px;
+    width: 60px; height: 60px;
+    border: 0;
+    border-radius: 18px;
+    background: var(--primary-container);
+    color: var(--on-primary-container);
+    display: grid; place-items: center;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, .2);
+    transition: transform .3s var(--expressive-ease);
+  }
+  .fab:hover { transform: scale(1.06); }
+  .fab[hidden] { display: none; }
+
+  /* 对话框与提示条 */
+  .scrim {
+    position: fixed; inset: 0;
+    background: rgba(0, 0, 0, .4);
+    display: grid; place-items: center;
+    padding: 20px;
+    z-index: 30;
+  }
+  .dialog {
+    background: var(--surface);
+    border-radius: var(--dialog-radius);
+    padding: 26px;
+    width: min(420px, 100%);
+    animation: pop .3s var(--expressive-ease);
+  }
+  @keyframes pop { from { opacity: 0; transform: scale(.9); } to { opacity: 1; transform: scale(1); } }
+  .dialog h2 { margin: 0 0 18px; font-size: 18px; }
+  .dialog .actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
+
+  .snackbar {
+    position: fixed;
+    left: 50%; bottom: 96px;
+    transform: translateX(-50%);
+    background: #2F3636;
+    color: #EFF1F1;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 13px;
+    z-index: 40;
+  }
+
+  [hidden] { display: none !important; }
+
+  /* ---------- 移动端形态 ---------- */
+  @media (max-width: 899px) {
+    .rail { display: none; }
+    .bottomnav { display: flex; }
+    main { padding-bottom: 96px; }
+    .stats { grid-template-columns: 1fr; }
+    .view { padding: 4px 14px 20px; }
+    .topbar { padding: 12px 14px; }
+    .fab { right: 16px; bottom: 96px; }
+    .snackbar { bottom: 150px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="banner">演示原型 · 页面内所有数据均为虚构，不代表真实业务</div>
+
+<div class="app">
+  <nav class="rail" aria-label="主导航">
+    <button class="rail-item is-active" data-view="overview" type="button">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg>
+      概览
+    </button>
+    <button class="rail-item" data-view="items" type="button">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7l9-4 9 4v10l-9 4-9-4z"/><path d="M3 7l9 4 9-4M12 11v10"/></svg>
+      商品
+    </button>
+    <button class="rail-item" data-view="calculator" type="button">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="2" width="16" height="20" rx="3"/><path d="M8 7h8M8 12h3M8 16h3M15 12v4"/></svg>
+      计算器
+    </button>
+  </nav>
+
+  <main>
+    <header class="topbar">
+      <button class="icon-btn" type="button" aria-label="菜单">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+      <h1 id="page-title">概览</h1>
+      <button class="icon-btn" type="button" aria-label="搜索">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="6"/><path d="M16 16l4 4"/></svg>
+      </button>
+    </header>
+
+    <!-- 视图：概览 -->
+    <section class="view" id="view-overview">
+      <div class="stats">
+        <div class="card">
+          <div class="label">总商品数</div>
+          <div class="value" id="stat-count">0</div>
+          <div class="hint">含今日新增</div>
+        </div>
+        <div class="card">
+          <div class="label">库存总值</div>
+          <div class="value" id="stat-value">¥0</div>
+          <div class="hint">按售价估算</div>
+        </div>
+        <div class="card">
+          <div class="label">今日新增</div>
+          <div class="value">2</div>
+          <div class="hint">较昨日 +1</div>
+        </div>
+      </div>
+
+      <div class="section-title">最近商品</div>
+      <div class="list" id="recent-list"></div>
+    </section>
+
+    <!-- 视图：商品 -->
+    <section class="view" id="view-items" hidden>
+      <div class="grid" id="item-grid"></div>
+    </section>
+
+    <!-- 视图：计算器 -->
+    <section class="view" id="view-calculator" hidden>
+      <label class="field">
+        <span>数字 A</span>
+        <input type="number" id="calc-a" placeholder="例如 2" inputmode="decimal">
+      </label>
+      <label class="field">
+        <span>数字 B</span>
+        <input type="number" id="calc-b" placeholder="例如 3" inputmode="decimal">
+      </label>
+      <button class="btn btn-filled block" id="calc-run" type="button">计算</button>
+      <div class="result">
+        <div class="label">A + B</div>
+        <div class="value empty" id="calc-result">—</div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<nav class="bottomnav" aria-label="底部导航">
+  <button class="is-active" data-view="overview" type="button">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg>
+    概览
+  </button>
+  <button data-view="items" type="button">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7l9-4 9 4v10l-9 4-9-4z"/><path d="M3 7l9 4 9-4M12 11v10"/></svg>
+    商品
+  </button>
+  <button data-view="calculator" type="button">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="2" width="16" height="20" rx="3"/><path d="M8 7h8M8 12h3M8 16h3M15 12v4"/></svg>
+    计算器
+  </button>
+</nav>
+
+<button class="fab" id="fab" type="button" aria-label="新增商品" hidden>
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+</button>
+
+<div class="scrim" id="scrim" hidden>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialog-title">
+    <h2 id="dialog-title">新增商品</h2>
+    <label class="field">
+      <span>商品名称</span>
+      <input type="text" id="new-name" placeholder="例如 笔记本">
+    </label>
+    <label class="field">
+      <span>价格</span>
+      <input type="number" id="new-price" placeholder="例如 19.9" inputmode="decimal">
+    </label>
+    <div class="actions">
+      <button class="btn btn-text" id="dialog-cancel" type="button">取消</button>
+      <button class="btn btn-filled" id="dialog-confirm" type="button">确认</button>
+    </div>
+  </div>
+</div>
+
+<div class="snackbar" id="snackbar" role="status" hidden></div>
+
+<script>
+  // ---- 假数据：全部写死，不请求任何后端 ----
+  var items = [
+    { name: "机械键盘", category: "外设", price: 399, stock: 12 },
+    { name: "人体工学椅", category: "家具", price: 1299, stock: 3 },
+    { name: "无线鼠标", category: "外设", price: 149, stock: 28 },
+    { name: "27 寸显示器", category: "显示设备", price: 1899, stock: 0 },
+    { name: "笔记本支架", category: "配件", price: 89, stock: 45 },
+    { name: "USB 集线器", category: "配件", price: 129, stock: 17 }
+  ];
+
+  var titles = { overview: "概览", items: "商品", calculator: "计算器" };
+
+  function el(id) { return document.getElementById(id); }
+
+  function renderStats() {
+    el("stat-count").textContent = items.length;
+    var total = items.reduce(function (sum, item) { return sum + item.price * item.stock; }, 0);
+    el("stat-value").textContent = "¥" + total.toLocaleString("zh-CN");
+  }
+
+  function renderRecent() {
+    var list = el("recent-list");
+    list.innerHTML = "";
+    items.slice(0, 3).forEach(function (item) {
+      var row = document.createElement("button");
+      row.type = "button";
+      row.className = "list-item";
+      row.innerHTML =
+        '<span class="avatar">' + item.name.slice(0, 1) + '</span>' +
+        '<span class="meta"><b>' + item.name + '</b>' +
+        '<span>' + item.category + ' · 库存 ' + item.stock + ' 件</span></span>' +
+        '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">' +
+        '<path d="M9 6l6 6-6 6"/></svg>';
+      row.addEventListener("click", function () { toast("已选择：" + item.name); });
+      list.appendChild(row);
+    });
+  }
+
+  function renderGrid() {
+    var grid = el("item-grid");
+    grid.innerHTML = "";
+    items.forEach(function (item) {
+      var card = document.createElement("div");
+      card.className = "item-card" + (item.stock === 0 ? " is-out" : "");
+      card.innerHTML =
+        '<span class="chip">' + item.category + '</span>' +
+        '<h3>' + item.name + '</h3>' +
+        '<div class="price">' + item.price + '</div>' +
+        '<div class="stock">' + (item.stock === 0 ? "已售罄" : "库存 " + item.stock + " 件") + '</div>';
+      card.addEventListener("click", function () { toast("已选择：" + item.name); });
+      grid.appendChild(card);
+    });
+  }
+
+  function renderAll() { renderStats(); renderRecent(); renderGrid(); }
+
+  function toast(text) {
+    var bar = el("snackbar");
+    bar.textContent = text;
+    bar.hidden = false;
+    clearTimeout(toast.timer);
+    toast.timer = setTimeout(function () { bar.hidden = true; }, 2200);
+  }
+
+  function switchView(view) {
+    ["overview", "items", "calculator"].forEach(function (name) {
+      el("view-" + name).hidden = name !== view;
+    });
+    document.querySelectorAll("[data-view]").forEach(function (button) {
+      button.classList.toggle("is-active", button.dataset.view === view);
+    });
+    el("page-title").textContent = titles[view];
+    el("fab").hidden = view !== "items";
+  }
+
+  document.querySelectorAll("[data-view]").forEach(function (button) {
+    button.addEventListener("click", function () { switchView(button.dataset.view); });
+  });
+
+  el("fab").addEventListener("click", function () {
+    el("scrim").hidden = false;
+    el("new-name").focus();
+  });
+
+  el("dialog-cancel").addEventListener("click", function () {
+    el("scrim").hidden = true;
+  });
+
+  el("dialog-confirm").addEventListener("click", function () {
+    var name = el("new-name").value.trim() || "未命名商品";
+    var price = parseFloat(el("new-price").value) || 0;
+    items.unshift({ name: name, category: "新录入", price: price, stock: 1 });
+    el("new-name").value = "";
+    el("new-price").value = "";
+    el("scrim").hidden = true;
+    renderAll();
+    toast("已新增：" + name + "（演示数据，刷新即还原）");
+  });
+
+  el("calc-run").addEventListener("click", function () {
+    var a = parseFloat(el("calc-a").value);
+    var b = parseFloat(el("calc-b").value);
+    var result = el("calc-result");
+    if (isNaN(a) || isNaN(b)) {
+      result.textContent = "请填写两个数字";
+      result.classList.add("empty");
+      return;
+    }
+    result.textContent = String(a + b);
+    result.classList.remove("empty");
+  });
+
+  renderAll();
+</script>
+</body>
+</html>

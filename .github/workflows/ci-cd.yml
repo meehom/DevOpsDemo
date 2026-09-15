@@ -12,9 +12,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # ---------- 需求门禁：没有需求文档 / 缺单测或 E2E 直接拦下 ----------
-  spec-check:
-    name: Spec Check
+  # ---------- 设计门禁：没有高保真设计 / 设计不齐全直接拦下 ----------
+  design-check:
+    name: Design Check
     runs-on: ubuntu-latest
 
     steps:
@@ -26,7 +26,25 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: 校验需求文档与测试覆盖
+      - name: 校验高保真设计是否齐全
+        run: python scripts/check_designs.py
+
+  # ---------- 需求门禁：没有需求文档 / 缺单测或 E2E / 没挂设计直接拦下 ----------
+  spec-check:
+    name: Spec Check
+    runs-on: ubuntu-latest
+    needs: design-check
+
+    steps:
+      - name: 拉取代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: 校验需求文档、设计引用与测试覆盖
         run: python scripts/check_specs.py
 
   # ---------- CI：单元测试 ----------

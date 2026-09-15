@@ -1,9 +1,20 @@
 # 项目协作规则
 
-本项目是 vibe coding 项目，采用「**先写需求 → 再写测试 → 最后交验收报告**」的流程。
+本项目是 vibe coding 项目，采用「**先出高保真设计 → 再写需求 → 再写测试 → 最后交验收报告**」的流程。
 以下规则对 AI coding agent 和人类开发者同样生效，且大部分由 CI 机器校验，不是建议。
 
 ## 铁律
+
+0. **项目最开始必须先出高保真设计，客户确认之后才能拆解需求、写代码。**
+   用 [m3e-canvas](https://lnkiai.github.io/m3e-canvas/)（[源码](https://github.com/lnkiai/m3e-canvas)）在浏览器里拖拽，
+   它有 Web 端和手机端两套画布，也有提示词按钮，可以直接截图或用提示词生成 UI。
+   产物统一放到 `designs/DS-001-简短名字/`：
+   - `design.md`：设计说明 + YAML front-matter（`id` / `title` / `status` / `tool` / `owner`）
+   - `prompt.md`：m3e-canvas 导出的提示词。**必须落盘进仓库**，因为编辑器数据只存在浏览器 localStorage，换浏览器就没了
+   - `mockup.html`：全是假数据的纯静态页面，零外部依赖、断网双击也能打开，用来交客户演示
+   - `shots/`：Web 端和手机端的截图
+
+   需求文档的 front-matter 必须填 `design: DS-001` 指向对应的设计，不挂设计的需求会被门禁拦下。
 
 1. **禁止先写实现代码。**
    任何功能新增或变更，必须先在 [specs/](specs/) 下创建需求文档（复制 [specs/TEMPLATE.md](specs/TEMPLATE.md)），
@@ -34,7 +45,10 @@
 ## 常用命令
 
 ```bash
-# 需求门禁：检查每个需求是否有对应单测和 E2E
+# 设计门禁：检查每份高保真设计是否齐全、能否直接交客户演示
+python scripts/check_designs.py
+
+# 需求门禁：检查每个需求是否有对应单测和 E2E（并检查是否挂了设计）
 python scripts/check_specs.py
 
 # 单元测试（不含 E2E）
@@ -57,6 +71,7 @@ python scripts/overview_report.py
 
 | 目录 | 用途 |
 |---|---|
+| `designs/` | 高保真设计，一个设计一个目录，含 `design.md` / `prompt.md` / `mockup.html` / `shots/` |
 | `specs/` | 需求文档，一个需求一个文件，机器解析的元信息写在 YAML front-matter |
 | `tests/` | 单元测试，按需求分文件 |
 | `tests/e2e/` | 端到端测试，同样按需求分文件 |
@@ -67,9 +82,11 @@ python scripts/overview_report.py
 ## 工作流
 
 ```
-写需求文档 → 写单测 + E2E → 写实现 → 本地跑验收报告 → 提交 PR
-   ↓                                          ↓
-Spec Check（CI 门禁）                    单测 / E2E（CI 门禁）
-                                                 ↓
-                                        验收报告 + 镜像发布（仅 main）
+m3e-canvas 拖 UI → 导出提示词 + mockup.html + 截图 → 客户确认
+   ↓
+写需求文档（挂 design: DS-xxx）→ 写单测 + E2E → 写实现 → 本地跑验收报告 → 提交 PR
+   ↓                                                              ↓
+Design Check / Spec Check（CI 门禁）                        单测 / E2E（CI 门禁）
+                                                                       ↓
+                                                              验收报告 + 镜像发布（仅 main）
 ```
