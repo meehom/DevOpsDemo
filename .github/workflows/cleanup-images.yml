@@ -1,0 +1,32 @@
+name: Cleanup Old Images
+
+on:
+  schedule:
+    # 每周一 03:00 UTC（北京时间 11:00）执行一次清理
+    - cron: "0 3 * * 1"
+  # 支持在 Actions 页面手动触发，方便验证
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+jobs:
+  cleanup:
+    name: Purge Old Package Versions
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: 删除历史镜像版本，只保留最近 10 个
+        uses: actions/delete-package-versions@v5
+        with:
+          # CI/CD 推送的镜像名是 ghcr.io/<owner>/<repo>，包名即仓库名
+          package-name: ${{ github.event.repository.name }}
+          package-type: container
+          min-versions-to-keep: 10
+          # latest 指向的版本永不删除
+          ignore-versions: '^latest$'
+          token: ${{ secrets.GITHUB_TOKEN }}
