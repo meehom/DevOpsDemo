@@ -1,43 +1,19 @@
-"""针对 app.main 中接口的单元测试。"""
+"""商品管理接口的单元测试。
+
+注意：这组接口尚未编写需求文档（specs/ 下没有对应 REQ），
+按 AGENTS.md 的规则，补文档时需要同步补端到端测试。
+"""
 import pytest
 from pydantic import ValidationError
 
 from app import main
 
 
-def test_health_ok(client):
-    """健康检查接口返回 ok。"""
-    resp = client.get("/health")
-    assert resp.status_code == 200
-    assert resp.json() == {"status": "ok"}
-
-
-def test_add_integers(client):
-    """两数相加：整数场景。"""
-    resp = client.get("/add", params={"a": 2, "b": 3})
-    assert resp.status_code == 200
-    assert resp.json() == {"result": 5.0}
-
-
-def test_add_floats_and_negatives(client):
-    """两数相加：浮点与负数场景。"""
-    resp = client.get("/add", params={"a": 1.5, "b": -0.5})
-    assert resp.status_code == 200
-    assert resp.json() == {"result": 1.0}
-
-
-def test_add_missing_param(client):
-    """缺少参数时返回 422。"""
-    resp = client.get("/add", params={"a": 1})
-    assert resp.status_code == 422
-
-
 def test_create_item_success(client):
     """创建商品成功并返回自增 id。"""
     resp = client.post("/items", json={"name": "book", "price": 9.9})
     assert resp.status_code == 200
-    body = resp.json()
-    assert body == {"id": 1, "name": "book", "price": 9.9}
+    assert resp.json() == {"id": 1, "name": "book", "price": 9.9}
 
     second = client.post("/items", json={"name": "pen", "price": 2.0}).json()
     assert second["id"] == 2

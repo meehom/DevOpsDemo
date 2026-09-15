@@ -6,5 +6,8 @@ venv/
 .coverage
 coverage.xml
 htmlcov/
+test-results/
+playwright-report/
+reports/
 .env
 .DS_Store

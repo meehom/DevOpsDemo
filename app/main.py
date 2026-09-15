@@ -4,6 +4,8 @@ from typing import Dict, List, Optional
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
+from . import ui
+
 app = FastAPI(
     title="DevOps Demo API",
     description="用于演示 GitHub Actions CI/CD 流程的示例接口",
@@ -65,3 +67,7 @@ def get_item(item_id: int) -> ItemOut:
     if item is None:
         raise HTTPException(status_code=404, detail="item not found")
     return item
+
+
+# 端到端测试用的演示页面
+app.include_router(ui.router)

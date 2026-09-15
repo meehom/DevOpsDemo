@@ -12,10 +12,28 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # ---------- 需求门禁：没有需求文档 / 缺单测或 E2E 直接拦下 ----------
+  spec-check:
+    name: Spec Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 拉取代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: 校验需求文档与测试覆盖
+        run: python scripts/check_specs.py
+
   # ---------- CI：单元测试 ----------
   test:
     name: Unit Test
     runs-on: ubuntu-latest
+    needs: spec-check
     strategy:
       fail-fast: false
       matrix:
@@ -37,7 +55,7 @@ jobs:
           pip install -r requirements-dev.txt
 
       - name: 运行单元测试
-        run: pytest
+        run: pytest -m "not e2e" --junitxml=reports/junit-unit.xml
 
       - name: 上传覆盖率报告
         if: matrix.python-version == '3.11'
@@ -46,11 +64,125 @@ jobs:
           name: coverage-report
           path: coverage.xml
 
+      - name: 上传单测结果
+        if: always() && matrix.python-version == '3.11'
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-results
+          path: reports/junit-unit.xml
+          if-no-files-found: ignore
+
+  # ---------- CI：Playwright 端到端测试 ----------
+  e2e:
+    name: E2E Test
+    runs-on: ubuntu-latest
+    needs: [spec-check, test]
+
+    steps:
+      - name: 拉取代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: 安装依赖
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: 安装 Chromium 及系统依赖
+        run: playwright install --with-deps chromium
+
+      - name: 后台启动服务并等待就绪
+        run: |
+          uvicorn app.main:app --host 127.0.0.1 --port 8000 &
+          for i in {1..30}; do
+            if curl -sf http://127.0.0.1:8000/health > /dev/null; then
+              echo "服务已就绪"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "服务在 30 秒内未就绪" >&2
+          exit 1
+
+      - name: 运行端到端测试
+        run: |
+          pytest -m e2e -o addopts="-v \
+            --base-url=http://127.0.0.1:8000 \
+            --screenshot=only-on-failure \
+            --tracing=retain-on-failure" \
+            --junitxml=reports/junit-e2e.xml
+
+      - name: 上传 E2E 结果与逐步截图
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-results
+          path: reports/
+          if-no-files-found: ignore
+
+      - name: 上传失败现场（trace / 截图）
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: test-results
+          if-no-files-found: ignore
+
+  # ---------- 验收报告：汇总单测与 E2E 结果，附逐步截图 ----------
+  acceptance:
+    name: Acceptance Report
+    runs-on: ubuntu-latest
+    needs: [test, e2e]
+    # 测试失败时也要出报告，报告本身就是失败现场的说明
+    if: always()
+    permissions:
+      contents: read
+      actions: read
+
+    steps:
+      - name: 拉取代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: 下载单测结果
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: unit-results
+          path: reports
+
+      - name: 下载 E2E 结果与逐步截图
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: e2e-results
+          path: reports
+
+      - name: 生成验收报告
+        run: python scripts/acceptance_report.py REQ-001 --skip-run
+
+      - name: 上传验收报告
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: acceptance-REQ-001
+          path: reports
+          if-no-files-found: ignore
+
   # ---------- CD：构建镜像并推送到 GitHub Container Registry ----------
   build-and-push:
     name: Build & Push Image
     runs-on: ubuntu-latest
-    needs: test
+    needs: [test, e2e]
     # 只有推送到 main 分支（合并后）才执行发布
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     permissions:
