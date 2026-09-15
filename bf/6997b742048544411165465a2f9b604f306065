@@ -1,0 +1,45 @@
+scripts/acceptance_report.py
+  s_4269dfcfab89eb::t_2665ad680de951 247
+  s_4269dfcfab89eb::t_a5645fc8dace4b 472-485,487-495,497-499
+  s_4269dfcfab89eb::t_4ce2378d214a65 6,9
+  s_4269dfcfab89eb::t_01b58b8640bad0 394-407,411
+  s_4269dfcfab89eb::t_4178d766b66dd6 453
+  s_4269dfcfab89eb::t_9529a123f5a1e1 12-13,16-17,29-114,128-142,163,165-166,168,175,182,189,193-206,209-211,213-215,218-219,221-224,229-246,248-294,296-393,445-446,451,455,457-469,471
+scripts/overview_report.py
+  s_4269dfcfab89eb::t_d47320e6b02a76 1-351,354-364
+  s_4269dfcfab89eb::t_accfe607d19d8c 352-353
+AGENTS.md
+  s_4269dfcfab89eb::t_05b3012c10a982 48
+  s_4269dfcfab89eb::t_a87b937c7b5332 50-53
+.github/workflows/ci-cd.yml
+  s_4269dfcfab89eb::t_44d72286248d69 170-175,181
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.2",
+  "base_commit_sha": "bf6997b742048544411165465a2f9b604f306065",
+  "prompts": {},
+  "sessions": {
+    "s_4269dfcfab89eb": {
+      "agent_id": {
+        "tool": "trae",
+        "id": "6aa959ca171f658a132d3e8b",
+        "model": "DeepSeek-V4.1-Flash__dev"
+      },
+      "human_author": "meehomliao <meehomliao@163.com>",
+      "custom_attributes": {
+        "tool_id": "Edit",
+        "session_id": "6aa959ca171f658a132d3e8b",
+        "operation_id": "6aa969c9171f658a132d40bf",
+        "tool_use_id": "6aa969c9171f658a132d40bf",
+        "runtime_client": "trae-tob-git-ai",
+        "edit_kind": "file_edit",
+        "client_type": "ide",
+        "tool_type": "agent",
+        "source_scene": "unknown",
+        "dedupe_key": "6aa959ca171f658a132d3e8b:6aa969c9171f658a132d40bf:afterEdit:6b34edfc",
+        "external_session_id": "6aa959ca171f658a132d3e8b"
+      }
+    }
+  }
+}
