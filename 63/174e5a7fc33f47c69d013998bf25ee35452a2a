@@ -1,0 +1,70 @@
+specs/TEMPLATE.md
+  s_4269dfcfab89eb::t_77553ab91cf58d 1-36
+tests/e2e/conftest.py
+  s_4269dfcfab89eb::t_a6ba313db0729d 1-47
+requirements-dev.txt
+  s_4269dfcfab89eb::t_aa04d2f1381328 4-5
+specs/REQ-001-两数相加接口与演示页面.md
+  s_4269dfcfab89eb::t_9a7f34e65072de 1-44
+AGENTS.md
+  s_4269dfcfab89eb::t_24d90453d957e8 1-71
+app/ui.py
+  s_4269dfcfab89eb::t_7fa771863e7b05 1-42
+tests/e2e/test_req_001_ui.py
+  s_4269dfcfab89eb::t_76e555a7290309 1-51
+app/main.py
+  s_4269dfcfab89eb::t_0ac24057d0da03 69-73
+  s_4269dfcfab89eb::t_6ff3f836cc9f49 7-8
+.github/workflows/ci-cd.yml
+  s_4269dfcfab89eb::t_260a2aef608165 15-31,36,58,67-73,79
+  s_4269dfcfab89eb::t_072a6afcacdd08 185
+  s_4269dfcfab89eb::t_57f0561ad180c1 117-118,120-127,134-178
+  s_4269dfcfab89eb::t_a516eeed0bef57 74-78,80-116,119,128-133,179
+  s_4269dfcfab89eb::t_b3e88c2f44ec5e 180
+.dockerignore
+  s_4269dfcfab89eb::t_e3207ce9898795 9-10
+.gitignore
+  s_4269dfcfab89eb::t_77ad55e8c23128 9-10
+  s_4269dfcfab89eb::t_0200aca76bd619 11
+tests/test_items_api.py
+  s_4269dfcfab89eb::t_9deacad9db4253 1-5,16
+scripts/check_specs.py
+  s_4269dfcfab89eb::t_9e475fc7298995 1-129
+tests/test_req_001_add_api.py
+  s_4269dfcfab89eb::t_b4ec595c264198 1-39
+scripts/acceptance_report.py
+  s_4269dfcfab89eb::t_77854a9d6b180f 1-207
+.github/workflows/cleanup-images.yml
+  s_4269dfcfab89eb::t_c76c04377ca073 23-27,31-32
+pytest.ini
+  s_4269dfcfab89eb::t_d384da955a7325 3-5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.2",
+  "base_commit_sha": "63174e5a7fc33f47c69d013998bf25ee35452a2a",
+  "prompts": {},
+  "sessions": {
+    "s_4269dfcfab89eb": {
+      "agent_id": {
+        "tool": "trae",
+        "id": "6aa959ca171f658a132d3e8b",
+        "model": "DeepSeek-V4.1-Flash__dev"
+      },
+      "human_author": "meehomliao <meehomliao@163.com>",
+      "custom_attributes": {
+        "tool_id": "Write",
+        "runtime_client": "trae-tob-git-ai",
+        "session_id": "6aa959ca171f658a132d3e8b",
+        "operation_id": "6aa965e6171f658a132d405b",
+        "client_type": "ide",
+        "edit_kind": "file_edit",
+        "external_session_id": "6aa959ca171f658a132d3e8b",
+        "tool_type": "agent",
+        "source_scene": "unknown",
+        "dedupe_key": "6aa959ca171f658a132d3e8b:6aa965e6171f658a132d405b:afterEdit:56e131c4",
+        "tool_use_id": "6aa965e6171f658a132d405b"
+      }
+    }
+  }
+}
