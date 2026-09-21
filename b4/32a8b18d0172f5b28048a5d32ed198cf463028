@@ -1,0 +1,53 @@
+designs/DS-002-上海市初中目标院校筛选/design.md
+  s_4269dfcfab89eb::t_6f387e017006c0 1-92
+designs/DS-002-上海市初中目标院校筛选/prompt.md
+  s_4269dfcfab89eb::t_337120cab79ef1 1-86
+app/schools_ui.py
+  s_4269dfcfab89eb::t_b582c48ad086ba 1-18
+app/main.py
+  s_4269dfcfab89eb::t_eb93958239f948 7
+  s_4269dfcfab89eb::t_0a833c8d6542f8 73-77
+designs/DS-002-上海市初中目标院校筛选/mockup.html
+  s_4269dfcfab89eb::t_3f8e2c2deedda1 1-372
+app/templates/schools.html
+  s_4269dfcfab89eb::t_21408058b4a8c9 1-327
+tests/test_req_002_schools_api.py
+  s_4269dfcfab89eb::t_67124274d32a98 100-108
+  s_4269dfcfab89eb::t_f0f825a6956ee0 1-99,109-121
+app/schools.py
+  s_4269dfcfab89eb::t_2aaeabf25cc63f 1-123
+specs/REQ-002-上海市初中目标院校筛选.md
+  s_4269dfcfab89eb::t_d647a8bf5d8d8e 37-47,51-57
+  s_4269dfcfab89eb::t_e4a11565dc7224 4
+  s_4269dfcfab89eb::t_6d77d286528427 1-3,5-36,48-50,58-89
+tests/e2e/test_req_002_schools.py
+  s_4269dfcfab89eb::t_8e63e2c59e714e 1-131
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.2",
+  "base_commit_sha": "b432a8b18d0172f5b28048a5d32ed198cf463028",
+  "prompts": {},
+  "sessions": {
+    "s_4269dfcfab89eb": {
+      "agent_id": {
+        "tool": "trae",
+        "id": "6aa959ca171f658a132d3e8b",
+        "model": "DeepSeek-V4.1-Flash__dev"
+      },
+      "human_author": "meehomliao <meehomliao@163.com>",
+      "custom_attributes": {
+        "edit_kind": "file_edit",
+        "tool_name": "Edit",
+        "display_model_name": "DeepSeek-V4.1-Flash",
+        "external_session_id": "6aa959ca171f658a132d3e8b",
+        "session_id": "6aa959ca171f658a132d3e8b",
+        "tool_use_id": "6ab1567b171f658a132d5081",
+        "source_scene": "agent",
+        "runtime_client": "trae-tob-git-ai",
+        "operation_id": "6ab1567b171f658a132d5081",
+        "client_type": "ide"
+      }
+    }
+  }
+}
