@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>目标院校筛选 · 演示原型</title>
+<style>
+  :root {
+    --primary: #00696E;
+    --on-primary: #FFFFFF;
+    --primary-container: #9CF1F6;
+    --on-primary-container: #002022;
+    --secondary-container: #CCE8E9;
+    --surface: #F4FBFB;
+    --surface-container: #E8EFF0;
+    --on-surface: #161D1D;
+    --on-surface-variant: #3F4949;
+    --outline: #6F7979;
+    --surface-tint: #00696E;
+    --error: #BA1A1A;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--surface);
+    color: var(--on-surface);
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+    line-height: 1.5;
+  }
+
+  /* 常驻演示提示条 */
+  .banner {
+    background: var(--secondary-container);
+    color: var(--on-surface-variant);
+    font-size: 12px;
+    text-align: center;
+    padding: 7px 16px;
+  }
+
+  .appbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    background: var(--surface);
+  }
+  .appbar h1 { font-size: 20px; font-weight: 600; margin: 0; flex: 1; }
+  .icon-btn {
+    width: 40px; height: 40px; border: 0; border-radius: 50%;
+    background: transparent; color: var(--on-surface-variant);
+    font-size: 17px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .icon-btn:hover { background: var(--surface-container); }
+
+  .content { padding: 0 20px 48px; }
+  .count { font-size: 14px; color: var(--on-surface-variant); margin: 4px 0 14px; }
+
+  /* 筛选区 */
+  .filters {
+    display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start;
+    background: var(--surface-container);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 18px;
+  }
+  .filter-block { flex: 1 1 260px; min-width: 0; }
+  .filter-label {
+    font-size: 12px; color: var(--on-surface-variant);
+    margin-bottom: 8px; font-weight: 600;
+  }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    border: 1px solid var(--outline);
+    background: transparent;
+    color: var(--on-surface-variant);
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background .15s, color .15s, border-color .15s;
+    white-space: nowrap;
+  }
+  .chip:hover { background: var(--surface); }
+  .chip[aria-pressed="true"] {
+    background: var(--primary-container);
+    color: var(--on-primary-container);
+    border-color: transparent;
+    font-weight: 600;
+  }
+
+  .switch-row { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+  .switch {
+    width: 44px; height: 26px; border-radius: 999px; border: 0;
+    background: var(--outline); position: relative; cursor: pointer;
+    transition: background .2s; flex: none;
+  }
+  .switch::after {
+    content: ""; position: absolute; top: 3px; left: 3px;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--on-primary); transition: transform .2s;
+  }
+  .switch[aria-checked="true"] { background: var(--primary); }
+  .switch[aria-checked="true"]::after { transform: translateX(18px); }
+
+  .reset {
+    align-self: flex-end;
+    background: transparent; border: 0;
+    color: var(--primary); font-size: 13px; font-weight: 600;
+    padding: 8px 12px; border-radius: 999px; cursor: pointer;
+  }
+  .reset:hover { background: var(--primary-container); }
+
+  /* 结果列表 */
+  .list { display: flex; flex-direction: column; gap: 12px; }
+  .card {
+    display: flex; align-items: center; gap: 14px;
+    background: var(--surface-container);
+    border-radius: 16px;
+    padding: 14px 16px;
+    box-shadow: 0 1px 2px rgba(0,0,0,.06);
+  }
+  .avatar {
+    width: 40px; height: 40px; border-radius: 50%; flex: none;
+    background: var(--primary-container); color: var(--on-primary-container);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 600;
+  }
+  .card-body { flex: 1; min-width: 0; }
+  .card-title { font-size: 16px; font-weight: 600; }
+  .card-sub { font-size: 12px; color: var(--on-surface-variant); }
+
+  .star {
+    width: 40px; height: 40px; border-radius: 50%; border: 0; flex: none;
+    background: transparent; color: var(--on-surface-variant);
+    font-size: 18px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .15s, color .15s;
+  }
+  .star[aria-pressed="true"] {
+    background: var(--primary-container);
+    color: var(--on-primary-container);
+  }
+
+  /* 空态 */
+  .empty { text-align: center; padding: 56px 20px; display: none; }
+  .empty .icon { font-size: 40px; color: var(--outline); }
+  .empty .title { font-size: 16px; font-weight: 600; margin-top: 12px; }
+  .empty .desc { font-size: 12px; color: var(--on-surface-variant); margin-top: 4px; }
+
+  /* 移动端：筛选区纵向堆叠，行政区横向滚动 */
+  @media (max-width: 899px) {
+    .filters { flex-direction: column; }
+    .filter-block { flex: 1 1 auto; width: 100%; }
+    .reset { align-self: flex-start; }
+    .chips.scroll-x {
+      flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px;
+      -webkit-overflow-scrolling: touch;
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="banner">演示原型 · 数据均为虚构，不代表真实招生信息</div>
+
+  <header class="appbar">
+    <button class="icon-btn" type="button" aria-label="菜单">☰</button>
+    <h1>目标院校筛选</h1>
+    <button class="icon-btn" type="button" aria-label="搜索">⌕</button>
+  </header>
+
+  <main class="content">
+    <p class="count" id="count">共 0 所</p>
+
+    <section class="filters">
+      <div class="filter-block">
+        <div class="filter-label">行政区</div>
+        <div class="chips scroll-x" id="district-chips"></div>
+      </div>
+      <div class="filter-block">
+        <div class="filter-label">办学性质</div>
+        <div class="chips" id="type-chips"></div>
+      </div>
+      <div class="filter-block">
+        <div class="filter-label">目标清单</div>
+        <div class="switch-row">
+          <button class="switch" id="target-only" type="button" role="switch" aria-checked="false" aria-label="只看目标清单"></button>
+          <span>只看目标清单</span>
+        </div>
+      </div>
+      <button class="reset" id="reset" type="button">重置</button>
+    </section>
+
+    <div class="list" id="list"></div>
+
+    <div class="empty" id="empty">
+      <div class="icon">⌕</div>
+      <div class="title">没有符合条件的院校</div>
+      <div class="desc">可以试试减少筛选条件，或点「重置」</div>
+    </div>
+  </main>
+
+<script>
+  // 全部为虚构演示数据，不请求任何后端接口
+  const DISTRICTS = ["徐汇", "黄浦", "浦东", "静安", "杨浦", "闵行", "普陀", "虹口",
+                     "长宁", "宝山", "嘉定", "松江", "青浦", "奉贤", "金山", "崇明"];
+  const SCHOOL_TYPES = ["全部", "公办", "民办"];
+
+  const SCHOOLS = [
+    { id: 1,  name: "徐汇区汇文初级中学",     district: "徐汇", school_type: "公办" },
+    { id: 2,  name: "徐汇区启明外国语初级中学", district: "徐汇", school_type: "民办" },
+    { id: 3,  name: "徐汇区蒲汇塘实验初级中学", district: "徐汇", school_type: "公办" },
+    { id: 4,  name: "黄浦区明德初级中学",     district: "黄浦", school_type: "公办" },
+    { id: 5,  name: "黄浦区南浦初级中学",     district: "黄浦", school_type: "民办" },
+    { id: 6,  name: "浦东新区华夏初级中学",   district: "浦东", school_type: "公办" },
+    { id: 7,  name: "浦东新区金桥外国语初级中学", district: "浦东", school_type: "民办" },
+    { id: 8,  name: "浦东新区临港实验初级中学", district: "浦东", school_type: "公办" },
+    { id: 9,  name: "静安区彭浦初级中学",     district: "静安", school_type: "公办" },
+    { id: 10, name: "静安区博雅初级中学",     district: "静安", school_type: "民办" },
+    { id: 11, name: "杨浦区定海初级中学",     district: "杨浦", school_type: "公办" },
+    { id: 12, name: "杨浦区同舟初级中学",     district: "杨浦", school_type: "民办" },
+    { id: 13, name: "闵行区莘庄初级中学",     district: "闵行", school_type: "公办" },
+    { id: 14, name: "闵行区文绮初级中学",     district: "闵行", school_type: "民办" },
+    { id: 15, name: "普陀区真如初级中学",     district: "普陀", school_type: "公办" },
+    { id: 16, name: "虹口区提篮桥初级中学",   district: "虹口", school_type: "公办" },
+    { id: 17, name: "长宁区天山初级中学",     district: "长宁", school_type: "公办" },
+    { id: 18, name: "长宁区新世纪初级中学",   district: "长宁", school_type: "民办" },
+    { id: 19, name: "宝山区顾村初级中学",     district: "宝山", school_type: "公办" },
+    { id: 20, name: "嘉定区疁城初级中学",     district: "嘉定", school_type: "公办" },
+    { id: 21, name: "松江区九峰初级中学",     district: "松江", school_type: "公办" },
+    { id: 22, name: "青浦区淀山湖初级中学",   district: "青浦", school_type: "公办" },
+    { id: 23, name: "奉贤区南桥初级中学",     district: "奉贤", school_type: "公办" },
+    { id: 24, name: "金山区枫泾初级中学",     district: "金山", school_type: "公办" },
+    { id: 25, name: "崇明区城桥初级中学",     district: "崇明", school_type: "公办" }
+  ];
+
+  const state = {
+    districts: new Set(),
+    schoolType: "全部",
+    targetOnly: false,
+    targets: new Set()
+  };
+
+  const el = {
+    districtChips: document.getElementById("district-chips"),
+    typeChips: document.getElementById("type-chips"),
+    targetOnly: document.getElementById("target-only"),
+    reset: document.getElementById("reset"),
+    list: document.getElementById("list"),
+    empty: document.getElementById("empty"),
+    count: document.getElementById("count")
+  };
+
+  function buildChips() {
+    DISTRICTS.forEach(function (district) {
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "chip";
+      chip.textContent = district;
+      chip.dataset.district = district;
+      chip.setAttribute("aria-pressed", "false");
+      chip.addEventListener("click", function () {
+        if (state.districts.has(district)) {
+          state.districts.delete(district);
+        } else {
+          state.districts.add(district);
+        }
+        render();
+      });
+      el.districtChips.appendChild(chip);
+    });
+
+    SCHOOL_TYPES.forEach(function (type) {
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "chip";
+      chip.textContent = type;
+      chip.dataset.type = type;
+      chip.setAttribute("aria-pressed", type === "全部" ? "true" : "false");
+      chip.addEventListener("click", function () {
+        state.schoolType = type;
+        render();
+      });
+      el.typeChips.appendChild(chip);
+    });
+  }
+
+  function filtered() {
+    return SCHOOLS.filter(function (school) {
+      if (state.districts.size && !state.districts.has(school.district)) return false;
+      if (state.schoolType !== "全部" && school.school_type !== state.schoolType) return false;
+      if (state.targetOnly && !state.targets.has(school.id)) return false;
+      return true;
+    });
+  }
+
+  function render() {
+    el.districtChips.querySelectorAll(".chip").forEach(function (chip) {
+      chip.setAttribute("aria-pressed", state.districts.has(chip.dataset.district) ? "true" : "false");
+    });
+    el.typeChips.querySelectorAll(".chip").forEach(function (chip) {
+      chip.setAttribute("aria-pressed", chip.dataset.type === state.schoolType ? "true" : "false");
+    });
+    el.targetOnly.setAttribute("aria-checked", state.targetOnly ? "true" : "false");
+
+    const rows = filtered();
+    el.count.textContent = "共 " + rows.length + " 所";
+
+    el.list.innerHTML = "";
+    rows.forEach(function (school) {
+      const isTarget = state.targets.has(school.id);
+
+      const card = document.createElement("div");
+      card.className = "card";
+      card.dataset.schoolId = String(school.id);
+
+      const avatar = document.createElement("div");
+      avatar.className = "avatar";
+      avatar.textContent = school.name.charAt(0);
+
+      const body = document.createElement("div");
+      body.className = "card-body";
+      const title = document.createElement("div");
+      title.className = "card-title";
+      title.textContent = school.name;
+      const sub = document.createElement("div");
+      sub.className = "card-sub";
+      sub.textContent = school.district + " · " + school.school_type;
+      body.appendChild(title);
+      body.appendChild(sub);
+
+      const star = document.createElement("button");
+      star.type = "button";
+      star.className = "star";
+      star.setAttribute("aria-pressed", isTarget ? "true" : "false");
+      star.setAttribute("aria-label", (isTarget ? "移出目标清单：" : "加入目标清单：") + school.name);
+      star.textContent = isTarget ? "★" : "☆";
+      star.addEventListener("click", function () {
+        if (state.targets.has(school.id)) {
+          state.targets.delete(school.id);
+        } else {
+          state.targets.add(school.id);
+        }
+        render();
+      });
+
+      card.appendChild(avatar);
+      card.appendChild(body);
+      card.appendChild(star);
+      el.list.appendChild(card);
+    });
+
+    el.empty.style.display = rows.length ? "none" : "block";
+  }
+
+  el.targetOnly.addEventListener("click", function () {
+    state.targetOnly = !state.targetOnly;
+    render();
+  });
+
+  el.reset.addEventListener("click", function () {
+    state.districts.clear();
+    state.schoolType = "全部";
+    state.targetOnly = false;
+    render();
+  });
+
+  buildChips();
+  render();
+</script>
+</body>
+</html>

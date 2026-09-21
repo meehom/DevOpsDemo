@@ -4,7 +4,7 @@ from typing import Dict, List, Optional
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
-from . import ui
+from . import schools, schools_ui, ui
 
 app = FastAPI(
     title="DevOps Demo API",
@@ -71,3 +71,7 @@ def get_item(item_id: int) -> ItemOut:
 
 # 端到端测试用的演示页面
 app.include_router(ui.router)
+
+# 院校筛选接口与页面（REQ-002）
+app.include_router(schools.router)
+app.include_router(schools_ui.router)
